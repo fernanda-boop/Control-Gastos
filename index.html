@@ -2,48 +2,57 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador de Ganancias y Gastos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <title>Control de Gastos</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gastos">
+    
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
+
     <style>
-        :root { --ganancia: #10b981; --gasto: #ef4444; --porqueria: #a855f7; --deuda: #f59e0b; --balance: #3b82f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin: 0; padding: 10px; color: #1e293b; }
-        .container { max-width: 500px; margin: 0 auto; }
-        h1 { text-align: center; font-size: 22px; margin: 20px 0; color: #0f172a; }
+        :root { --ganancia: #10b981; --gasto: #ef4444; --porqueria: #a855f7; --deuda: #f59e0b; --balance: #3b82f6; --dorado: #FFD700; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin: 0; padding: 0; color: #1e293b; }
+        
+        /* Encabezado Estilo App */
+        .header-app { background: var(--dorado); padding: 40px 20px 25px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .header-app h1 { margin: 0; font-size: 24px; color: #000; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; padding-bottom: 60px; }
 
         /* Tarjetas de Resumen */
-        .resumen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .card-sm { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .label { font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .resumen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: -20px; margin-bottom: 20px; }
+        .card-sm { background: white; padding: 15px; border-radius: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); }
+        .label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
         .val { font-size: 18px; font-weight: 800; }
 
-        /* Secciones Principales */
-        .section { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        /* Secciones */
+        .section { background: white; padding: 20px; border-radius: 22px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-bottom: 20px; }
         h3 { margin-top: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; }
         
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 16px; box-sizing: border-box; }
-        .btn-main { border: none; font-weight: bold; color: white; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        input, select, button { width: 100%; padding: 14px; margin: 8px 0; border-radius: 14px; border: 1px solid #e2e8f0; font-size: 16px; box-sizing: border-box; }
+        .btn-main { border: none; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; }
         .btn-inc { background: var(--ganancia); }
         .btn-exp { background: var(--gasto); }
-        .btn-del { background: #fee2e2; color: #ef4444; font-size: 12px; width: auto; padding: 5px 10px; border: none; }
+        .btn-del { background: #fee2e2; color: #ef4444; font-size: 12px; width: auto; padding: 6px 12px; border: none; border-radius: 10px; }
 
-        /* Listas e Historial */
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border-radius: 12px; margin-bottom: 8px; border-left: 4px solid #cbd5e1; }
-        .item-info { display: flex; flex-direction: column; }
-        .item-name { font-weight: bold; font-size: 14px; }
-        .item-sub { font-size: 11px; color: #64748b; }
-        .total-box { background: #dbeafe; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; font-weight: bold; color: #1e40af; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #f8fafc; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid #cbd5e1; }
+        .total-box { background: #dbeafe; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; font-weight: bold; color: #1e40af; }
 
-        /* Plan Deuda */
-        .debt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .box { border: 2px solid #f1f5f9; padding: 10px; border-radius: 12px; text-align: center; cursor: pointer; background: white; font-size: 13px; }
+        .debt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .box { border: 2px solid #f1f5f9; padding: 12px; border-radius: 14px; text-align: center; cursor: pointer; background: white; }
         .paid { background: #dcfce7; border-color: var(--ganancia); color: #065f46; text-decoration: line-through; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Contador de Ganancias y Gastos</h1>
+<div class="header-app">
+    <h1>Control de Gastos</h1>
+</div>
 
+<div class="container">
     <div class="resumen-grid">
         <div class="card-sm"><div class="label">Ganancias</div><div id="t-gan" class="val" style="color:var(--ganancia)">$0</div></div>
         <div class="card-sm"><div class="label">Gastos</div><div id="t-gas" class="val" style="color:var(--gasto)">$0</div></div>
@@ -56,9 +65,9 @@
 
     <div class="section">
         <label class="label">Mes de Registro</label>
-        <select id="sel-mes" onchange="render()"><option>Enero</option><option>Febrero</option><option>Marzo</option></select>
+        <select id="sel-mes" onchange="render()"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option></select>
         
-        <h3>📝 Agregar Transacción</h3>
+        <h3>📝 Nueva Anotación</h3>
         <input type="text" id="t-desc" placeholder="Descripción">
         <input type="number" id="t-monto" placeholder="Monto $" inputmode="decimal">
         <select id="t-cat">
@@ -87,8 +96,9 @@
     </div>
 
     <div class="section">
-        <h3>📊 Historial de Transacciones</h3>
+        <h3>📊 Historial</h3>
         <div id="historial"></div>
+        <button onclick="descargarMes()" class="btn-main" style="background:#64748b; margin-top:15px">📥 Descargar Resumen</button>
     </div>
 </div>
 
@@ -97,7 +107,8 @@
 
     const CUOTAS = [
         {id:'1', m:'Dic 24', a:'100k'}, {id:'2', m:'Ene 25', a:'160k'},
-        {id:'3', m:'Feb 25', a:'200k'}, {id:'4', m:'Mar 25', a:'200k'}
+        {id:'3', m:'Feb 25', a:'200k'}, {id:'4', m:'Mar 25', a:'200k'},
+        {id:'5', m:'Abr 25', a:'200k'}, {id:'6', m:'May 25', a:'240k'}
     ];
 
     function addTrans(tipo) {
@@ -132,56 +143,34 @@
     function render() {
         const mes = document.getElementById('sel-mes').value;
         let g = 0, s = 0, p = 0, d = 0;
-        
-        // Historial y Sumas
         const hDiv = document.getElementById('historial'); hDiv.innerHTML = '';
         db.trans.filter(t => t.mes === mes).forEach(t => {
-            if(t.tipo === 'gan') g += t.monto;
-            else {
-                s += t.monto;
-                if(t.cat === 'Porquería') p += t.monto;
-                if(t.cat === 'Deuda') d += t.monto;
-            }
+            if(t.tipo === 'gan') g += t.monto; 
+            else { s += t.monto; if(t.cat === 'Porquería') p += t.monto; if(t.cat === 'Deuda') d += t.monto; }
             const color = t.tipo === 'gan' ? 'var(--ganancia)' : 'var(--gasto)';
-            hDiv.innerHTML += `
-                <div class="item-row" style="border-left-color:${color}">
-                    <div class="item-info"><span class="item-name">${t.desc}</span><span class="item-sub">${t.cat} • ${t.fecha}</span></div>
-                    <div style="display:flex; align-items:center; gap:10px">
-                        <span style="font-weight:800; color:${color}">${t.tipo==='gan'?'+':'-'}$${t.monto.toLocaleString()}</span>
-                        <button class="btn-del" onclick="delTrans(${t.id})">Eliminar</button>
-                    </div>
-                </div>`;
+            hDiv.innerHTML += `<div class="item-row" style="border-left-color:${color}"><div class="item-info"><strong>${t.desc}</strong><small>${t.cat}</small></div><div style="display:flex; align-items:center; gap:10px"><span style="font-weight:800; color:${color}">$${t.monto.toLocaleString()}</span><button class="btn-del" onclick="delTrans(${t.id})">x</button></div></div>`;
         });
-
-        // Deudores
         const dDiv = document.getElementById('lista-deudores'); dDiv.innerHTML = '';
         let cob = 0;
         db.deudores.forEach(deu => {
             cob += deu.monto;
-            dDiv.innerHTML += `
-                <div class="item-row" style="border-left-color:var(--balance)">
-                    <span class="item-name">${deu.nombre}</span>
-                    <div style="display:flex; align-items:center; gap:10px">
-                        <span style="font-weight:bold; color:var(--balance)">$${deu.monto.toLocaleString()}</span>
-                        <button class="btn-del" onclick="delDeudor(${deu.id})">Eliminar</button>
-                    </div>
-                </div>`;
+            dDiv.innerHTML += `<div class="item-row" style="border-left-color:var(--balance)"><span>${deu.nombre}</span><div style="display:flex; align-items:center; gap:10px"><span style="font-weight:bold; color:var(--balance)">$${deu.monto.toLocaleString()}</span><button class="btn-del" onclick="delDeudor(${deu.id})">x</button></div></div>`;
         });
-
-        // Totales finales
         document.getElementById('t-gan').innerText = `$${g.toLocaleString()}`;
         document.getElementById('t-gas').innerText = `$${s.toLocaleString()}`;
         document.getElementById('t-por').innerText = `$${p.toLocaleString()}`;
         document.getElementById('t-deu').innerText = `$${d.toLocaleString()}`;
         document.getElementById('t-bal').innerText = `$${(g - s).toLocaleString()}`;
         document.getElementById('t-cobrar').innerText = `$${cob.toLocaleString()}`;
-
-        // Plan Negro
         const pDiv = document.getElementById('plan-negro'); pDiv.innerHTML = '';
-        CUOTAS.forEach(c => {
-            const isP = db.plan.includes(c.id);
-            pDiv.innerHTML += `<div class="box ${isP?'paid':''}" onclick="togPlan('${c.id}')"><strong>${c.m}</strong><br>$${c.a}</div>`;
-        });
+        CUOTAS.forEach(c => { const isP = db.plan.includes(c.id); pDiv.innerHTML += `<div class="box ${isP?'paid':''}" onclick="togPlan('${c.id}')"><strong>${c.m}</strong><br>$${c.a}</div>`; });
+    }
+
+    function descargarMes() {
+        const mesSel = document.getElementById('sel-mes').value;
+        let txt = `RESUMEN: ${mesSel}\nGANANCIAS: ${document.getElementById('t-gan').innerText}\nGASTOS: ${document.getElementById('t-gas').innerText}\nBALANCE: ${document.getElementById('t-bal').innerText}\nCOBRAR: ${document.getElementById('t-cobrar').innerText}`;
+        const blob = new Blob([txt], {type: 'text/plain'});
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Resumen_${mesSel}.txt`; link.click();
     }
     render();
 </script>
