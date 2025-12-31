@@ -1,137 +1,113 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Gastos Pro</title>
+    <title>Mis Gastos</title>
     <style>
-        :root {
-            --primary: #3b82f6; --success: #10b981; --danger: #ef4444; 
-            --bg: #f8fafc; --text: #1e293b; --white: #ffffff;
-        }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
-        .container { max-width: 500px; margin: 0 auto; }
-        
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card-label { font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; }
-        .card-amount { font-size: 18px; font-weight: 800; margin-top: 4px; }
-        .income-txt { color: var(--success); }
-        .expense-txt { color: var(--danger); }
-        .balance-txt { color: var(--primary); }
-        .full { grid-column: span 2; }
-
-        .section { background: var(--white); padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        h2 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
-
-        .form-stack { display: flex; flex-direction: column; gap: 10px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        .btn-row { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; color: white; cursor: pointer; }
-        .btn-inc { background: var(--success); }
-        .btn-exp { background: var(--danger); }
-        .btn-add { background: var(--primary); width: 100%; margin-top: 5px; }
-        
-        /* Botones de acción mensual */
-        .admin-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .btn-action { background: white; border: 1px solid #e2e8f0; color: #64748b; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: 600; }
-        .btn-reset { color: var(--danger); border-color: #fee2e2; }
-
-        .debt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .debt-box { border: 2px solid #e2e8f0; padding: 12px; border-radius: 10px; text-align: center; cursor: pointer; }
-        .debt-box.paid { background: #dcfce7; border-color: var(--success); color: #065f46; text-decoration: line-through; }
-
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f1f5f9; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid #cbd5e1; }
-        .item-inc { border-left-color: var(--success); }
-        .item-exp { border-left-color: var(--danger); }
-        .del-btn { background: #fee2e2; color: #dc2626; border: none; padding: 5px 10px; border-radius: 6px; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        button { border: none; font-weight: bold; color: white; cursor: pointer; }
+        .btn-inc { background: #10b981; }
+        .btn-exp { background: #ef4444; }
+        .debt-box { border: 2px solid #ddd; padding: 10px; margin: 5px; border-radius: 8px; display: inline-block; width: 40%; text-align: center; }
+        .paid { background: #dcfce7; border-color: #10b981; text-decoration: line-through; }
+        .item { background: #eee; padding: 10px; border-radius: 8px; margin-top: 5px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="section">
-        <div class="form-stack">
-            <label for="current-month" style="font-size: 12px; font-weight: bold; color: #64748b;">MES DE REGISTRO:</label>
-            <select id="current-month" onchange="updateMonth()">
-                <option value="Enero">Enero</option><option value="Febrero">Febrero</option>
-                <option value="Marzo">Marzo</option><option value="Abril">Abril</option>
-                <option value="Mayo">Mayo</option><option value="Junio">Junio</option>
-                <option value="Julio">Julio</option><option value="Agosto">Agosto</option>
-                <option value="Septiembre">Septiembre</option><option value="Octubre">Octubre</option>
-                <option value="Noviembre">Noviembre</option><option value="Diciembre">Diciembre</option>
-            </select>
-        </div>
+    <div class="card">
+        <label>MES:</label>
+        <select id="month" onchange="saveMonth()"><option>Enero</option><option>Febrero</option><option>Marzo</option></select>
     </div>
 
-    <div class="summary-grid">
-        <div class="card"><div class="card-label">Ganado</div><div id="res-inc" class="card-amount income-txt">$0</div></div>
-        <div class="card"><div class="card-label">Gastado</div><div id="res-exp" class="card-amount expense-txt">$0</div></div>
-        <div class="card full"><div class="card-label">Balance Actual</div><div id="res-bal" class="card-amount balance-txt">$0</div></div>
+    <div class="card">
+        <h3>Nueva Anotación</h3>
+        <input type="text" id="desc" placeholder="¿En qué?">
+        <input type="number" id="amt" placeholder="Monto $">
+        <button onclick="add('income')" class="btn-inc">+ Ganancia</button>
+        <button onclick="add('expense')" class="btn-exp">- Gasto</button>
     </div>
 
-    <div class="section">
-        <h2>📝 Nueva Anotación</h2>
-        <div class="form-stack">
-            <input type="text" id="desc" placeholder="¿En qué?" autocomplete="off">
-            <input type="number" id="amt" placeholder="Monto $" inputmode="decimal">
-            <select id="cat" title="Categoría">
-                <option value="Comida">Comida</option><option value="Salario">Salario</option>
-                <option value="Porquería">Porquería</option><option value="Servicios">Servicios</option>
-                <option value="Otros">Otros</option>
-            </select>
-            <div class="btn-row">
-                <button onclick="save('income')" class="btn btn-inc">+ Ganancia</button>
-                <button onclick="save('expense')" class="btn btn-exp">- Gasto</button>
-            </div>
-        </div>
+    <div class="card">
+        <h3>Plan Deuda Negro</h3>
+        <div id="plan"></div>
     </div>
 
-    <div class="section">
-        <h2>💳 Plan Deuda Negro</h2>
-        <div id="black-debt-list" class="debt-grid"></div>
+    <div class="card">
+        <h3>Historial</h3>
+        <div id="list"></div>
+        <button onclick="download()" style="background:#3b82f6; margin-top:20px">📥 Descargar Resumen</button>
     </div>
-
-    <div class="section">
-        <h2>👥 Me deben</h2>
-        <div class="form-stack">
-            <input type="text" id="d-name" placeholder="Nombre">
-            <input type="number" id="d-amt" placeholder="Monto $" inputmode="decimal">
-            <button onclick="saveD()" class="btn btn-add">Registrar</button>
-        </div>
-        <div id="d-list" style="margin-top:15px"></div>
-    </div>
-
-    <div class="section">
-        <h2>Historial</h2>
-        <div id="history"></div>
-        <div class="admin-btns">
-            <button onclick="downloadData()" class="btn-action">📥 Descargar Mes</button>
-            <button onclick="resetMonth()" class="btn-action btn-reset">♻️ Reiniciar Mes</button>
-        </div>
-    </div>
-</div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('app_v5')) || { trans: [], debtors: [], paidIds: [], month: 'Enero' };
-    document.getElementById('current-month').value = db.month;
+    // Base de datos simple
+    let data = JSON.parse(localStorage.getItem('datos_gastos')) || { trans: [], paid: [], month: 'Enero' };
 
-    const PLAN = [
-        { id: 'p1', m: 'Dic 24', a: 100000 }, { id: 'p2', m: 'Ene 25', a: 160000 },
-        { id: 'p3', m: 'Feb 25', a: 200000 }, { id: 'p4', m: 'Mar 25', a: 200000 },
-        { id: 'p5', m: 'Abr 25', a: 200000 }, { id: 'p6', m: 'May 25', a: 240000 },
-        { id: 'p7', m: 'Jun 25', a: 240000 }
+    const PLAN_CUOTAS = [
+        {id:'p1', m:'Dic 24', a:'100k'}, {id:'p2', m:'Ene 25', a:'160k'},
+        {id:'p3', m:'Feb 25', a:'200k'}, {id:'p4', m:'Mar 25', a:'200k'}
     ];
 
-    function save(type) {
-        const d = document.getElementById('desc').value, a = parseFloat(document.getElementById('amt').value);
-        if(!d || !a) return;
-        db.trans.push({ id: Date.now(), type, d, a, c: document.getElementById('cat').value });
+    function add(type) {
+        const d = document.getElementById('desc').value;
+        const a = document.getElementById('amt').value;
+        if(!d || !a) return alert("Completa los campos");
+        
+        data.trans.push({ d, a, type });
         update();
-        document.getElementById('desc').value = ''; document.getElementById('amt').value = '';
+        document.getElementById('desc').value = '';
+        document.getElementById('amt').value = '';
     }
 
-    function saveD() {
-        const n = document.getElementById('d-name').value, a = parseFloat(document.getElementById('d-amt').value);
-        if(!n || !a) return;
-        db.debtors.push({ id:
+    function toggle(id) {
+        if(data.paid.includes(id)) {
+            data.paid = data.paid.filter(i => i !== id);
+        } else {
+            data.paid.push(id);
+        }
+        update();
+    }
+
+    function saveMonth() {
+        data.month = document.getElementById('month').value;
+        update();
+    }
+
+    function download() {
+        let txt = "RESUMEN " + data.month + "\n\n";
+        data.trans.forEach(t => txt += t.type + ": " + t.d + " $" + t.a + "\n");
+        const blob = new Blob([txt], {type: 'text/plain'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'gastos.txt';
+        a.click();
+    }
+
+    function update() {
+        localStorage.setItem('datos_gastos', JSON.stringify(data));
+        render();
+    }
+
+    function render() {
+        document.getElementById('month').value = data.month;
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+        data.trans.forEach(t => {
+            list.innerHTML += `<div class="item"><span>${t.d}</span><span>$${t.a}</span></div>`;
+        });
+
+        const plan = document.getElementById('plan');
+        plan.innerHTML = '';
+        PLAN_CUOTAS.forEach(p => {
+            const isPaid = data.paid.includes(p.id);
+            plan.innerHTML += `<div class="debt-box ${isPaid ? 'paid' : ''}" onclick="toggle('${p.id}')">${p.m}<br>$${p.a}</div>`;
+        });
+    }
+
+    render();
+</script>
+</body>
+</html>
