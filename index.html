@@ -3,108 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Gastos</title>
+    <title>Contador de Ganancias y Gastos</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
-        button { border: none; font-weight: bold; color: white; cursor: pointer; }
-        .btn-inc { background: #10b981; }
-        .btn-exp { background: #ef4444; }
-        .debt-box { border: 2px solid #ddd; padding: 10px; margin: 5px; border-radius: 8px; display: inline-block; width: 40%; text-align: center; }
-        .paid { background: #dcfce7; border-color: #10b981; text-decoration: line-through; }
-        .item { background: #eee; padding: 10px; border-radius: 8px; margin-top: 5px; display: flex; justify-content: space-between; }
+        :root { --ganancia: #10b981; --gasto: #ef4444; --porqueria: #a855f7; --deuda: #f59e0b; --balance: #3b82f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7fa; margin: 0; padding: 15px; color: #334155; }
+        .container { max-width: 500px; margin: 0 auto; }
+        h1 { text-align: center; font-size: 22px; color: #1e293b; margin-bottom: 20px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .card-mini { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .label { font-size: 11px; font-weight: bold; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; }
+        .amount { font-size: 18px; font-weight: 800; }
+        .full { grid-column: span 2; text-align: center; }
+
+        .main-card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-top: 20px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 16px; box-sizing: border-box; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { border: none; font-weight: bold; color: white; cursor: pointer; height: 50px; }
+        .btn-green { background: var(--ganancia); flex: 1; }
+        .btn-red { background: var(--gasto); flex: 1; }
+        
+        .debt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .box { border: 2px solid #f1f5f9; padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; background: white; transition: 0.2s; }
+        .paid { background: #dcfce7; border-color: var(--ganancia); color: #065f46; text-decoration: line-through; }
+        
+        .history-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <label>MES:</label>
-        <select id="month" onchange="saveMonth()"><option>Enero</option><option>Febrero</option><option>Marzo</option></select>
+<div class="container">
+    <h1>Contador de Ganancias y Gastos</h1>
+
+    <div class="grid">
+        <div class="card-mini"><div class="label">Ganancias</div><div id="t-gan" class="amount" style="color:var(--ganancia)">$0</div></div>
+        <div class="card-mini"><div class="label">Gastos Totales</div><div id="t-gas" class="amount" style="color:var(--gasto)">$0</div></div>
+        <div class="card-mini"><div class="label">Porquería</div><div id="t-por" class="amount" style="color:var(--porqueria)">$0</div></div>
+        <div class="card-mini"><div class="label">Deudas Mes Pasado</div><div id="t-deu" class="amount" style="color:var(--deuda)">$0</div></div>
+        <div class="card-mini full"><div class="label">Balance Actual</div><div id="t-bal" class="amount" style="color:var(--balance)">$0</div></div>
     </div>
 
-    <div class="card">
-        <h3>Nueva Anotación</h3>
-        <input type="text" id="desc" placeholder="¿En qué?">
-        <input type="number" id="amt" placeholder="Monto $">
-        <button onclick="add('income')" class="btn-inc">+ Ganancia</button>
-        <button onclick="add('expense')" class="btn-exp">- Gasto</button>
+    <div class="main-card">
+        <label class="label">Seleccionar Mes</label>
+        <select id="mes" onchange="actualizar()"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option></select>
+        
+        <h3>Agregar Transacción</h3>
+        <input type="text" id="desc" placeholder="Descripción (ej: Sueldo, Comida...)">
+        <input type="number" id="monto" placeholder="Monto $" inputmode="decimal">
+        
+        <label class="label">Categoría del Gasto</label>
+        <select id="cat">
+            <option value="General">Gasto General</option>
+            <option value="Porquería">Porquería (Gasto hormiga)</option>
+            <option value="Deuda">Deuda Mes Pasado</option>
+        </select>
+
+        <div class="btn-group">
+            <button onclick="add('gan')" class="btn-green">+ Ganancia</button>
+            <button onclick="add('gas')" class="btn-red">- Gasto</button>
+        </div>
     </div>
 
-    <div class="card">
-        <h3>Plan Deuda Negro</h3>
-        <div id="plan"></div>
+    <div class="main-card">
+        <h3>💳 Plan Deuda Negro</h3>
+        <div id="plan-negro" class="debt-grid"></div>
     </div>
 
-    <div class="card">
-        <h3>Historial</h3>
-        <div id="list"></div>
-        <button onclick="download()" style="background:#3b82f6; margin-top:20px">📥 Descargar Resumen</button>
+    <div class="main-card">
+        <h3>Historial del Mes</h3>
+        <div id="historial"></div>
+        <button onclick="descargar()" style="background:#64748b; margin-top:15px">📥 Descargar Resumen .txt</button>
     </div>
+</div>
 
 <script>
-    // Base de datos simple
-    let data = JSON.parse(localStorage.getItem('datos_gastos')) || { trans: [], paid: [], month: 'Enero' };
+    // Cargar datos por mes para que la sumatoria sea específica
+    let datos = JSON.parse(localStorage.getItem('finanzas_v2')) || { t: [], p: [], m: 'Enero' };
 
-    const PLAN_CUOTAS = [
-        {id:'p1', m:'Dic 24', a:'100k'}, {id:'p2', m:'Ene 25', a:'160k'},
-        {id:'p3', m:'Feb 25', a:'200k'}, {id:'p4', m:'Mar 25', a:'200k'}
+    const CUOTAS = [
+        {id:'c1', m:'Dic 24', a:'100k'}, {id:'c2', m:'Ene 25', a:'160k'},
+        {id:'c3', m:'Feb 25', a:'200k'}, {id:'c4', m:'Mar 25', a:'200k'},
+        {id:'c5', m:'Abr 25', a:'200k'}, {id:'c6', m:'May 25', a:'240k'}
     ];
 
-    function add(type) {
-        const d = document.getElementById('desc').value;
-        const a = document.getElementById('amt').value;
-        if(!d || !a) return alert("Completa los campos");
-        
-        data.trans.push({ d, a, type });
-        update();
-        document.getElementById('desc').value = '';
-        document.getElementById('amt').value = '';
+    function add(tipo) {
+        const desc = document.getElementById('desc').value;
+        const monto = parseFloat(document.getElementById('monto').value);
+        const cat = document.getElementById('cat').value;
+        const mesActual = document.getElementById('mes').value;
+
+        if(!desc || !monto) return;
+
+        datos.t.push({ desc, monto, tipo, cat, mes: mesActual });
+        actualizar();
+        document.getElementById('desc').value = ''; 
+        document.getElementById('monto').value = '';
     }
 
-    function toggle(id) {
-        if(data.paid.includes(id)) {
-            data.paid = data.paid.filter(i => i !== id);
-        } else {
-            data.paid.push(id);
-        }
-        update();
+    function toggleDeuda(id) {
+        datos.p.includes(id) ? datos.p = datos.p.filter(i => i !== id) : datos.p.push(id);
+        actualizar();
     }
 
-    function saveMonth() {
-        data.month = document.getElementById('month').value;
-        update();
-    }
-
-    function download() {
-        let txt = "RESUMEN " + data.month + "\n\n";
-        data.trans.forEach(t => txt += t.type + ": " + t.d + " $" + t.a + "\n");
-        const blob = new Blob([txt], {type: 'text/plain'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'gastos.txt';
-        a.click();
-    }
-
-    function update() {
-        localStorage.setItem('datos_gastos', JSON.stringify(data));
+    function actualizar() {
+        datos.m = document.getElementById('mes').value;
+        localStorage.setItem('finanzas_v2', JSON.stringify(datos));
         render();
     }
 
     function render() {
-        document.getElementById('month').value = data.month;
-        const list = document.getElementById('list');
-        list.innerHTML = '';
-        data.trans.forEach(t => {
-            list.innerHTML += `<div class="item"><span>${t.d}</span><span>$${t.a}</span></div>`;
+        const mesSel = document.getElementById('mes').value;
+        let sumGan = 0, sumGas = 0, sumPor = 0, sumDeu = 0;
+        
+        const hist = document.getElementById('historial'); 
+        hist.innerHTML = '';
+
+        // Filtrar y sumar solo lo del mes seleccionado
+        datos.t.forEach(item => {
+            if(item.mes === mesSel) {
+                if(item.tipo === 'gan') {
+                    sumGan += item.monto;
+                } else {
+                    sumGas += item.monto; // Se suma al total de gastos
+                    if(item.cat === 'Porquería') sumPor += item.monto; // También a porquería
+                    if(item.cat === 'Deuda') sumDeu += item.monto; // También a deuda
+                }
+                
+                const color = item.tipo === 'gan' ? 'green' : 'red';
+                const tagCol = item.cat === 'Porquería' ? 'var(--porqueria)' : (item.cat === 'Deuda' ? 'var(--deuda)' : '#94a3b8');
+                
+                hist.innerHTML += `
+                    <div class="history-item">
+                        <span>${item.desc} <span class="tag" style="background:${tagCol}">${item.cat}</span></span>
+                        <span style="color:${color}; font-weight:bold">$${item.monto.toLocaleString()}</span>
+                    </div>`;
+            }
         });
 
-        const plan = document.getElementById('plan');
-        plan.innerHTML = '';
-        PLAN_CUOTAS.forEach(p => {
-            const isPaid = data.paid.includes(p.id);
-            plan.innerHTML += `<div class="debt-box ${isPaid ? 'paid' : ''}" onclick="toggle('${p.id}')">${p.m}<br>$${p.a}</div>`;
+        // Actualizar los recuadros de la parte superior
+        document.getElementById('t-gan').innerText = `$${sumGan.toLocaleString()}`;
+        document.getElementById('t-gas').innerText = `$${sumGas.toLocaleString()}`;
+        document.getElementById('t-por').innerText = `$${sumPor.toLocaleString()}`;
+        document.getElementById('t-deu').innerText = `$${sumDeu.toLocaleString()}`;
+        document.getElementById('t-bal').innerText = `$${(sumGan - sumGas).toLocaleString()}`;
+
+        // Renderizar Plan Deuda
+        const pNegro = document.getElementById('plan-negro'); 
+        pNegro.innerHTML = '';
+        CUOTAS.forEach(c => {
+            const isPaid = datos.p.includes(c.id);
+            pNegro.innerHTML += `<div class="box ${isPaid?'paid':''}" onclick="toggleDeuda('${c.id}')"><strong>${c.m}</strong><br>$${c.a}</div>`;
         });
+    }
+
+    function descargar() {
+        const mesSel = document.getElementById('mes').value;
+        let txt = `RESUMEN DE ${mesSel.toUpperCase()}\n--------------------------\n`;
+        txt += `GANANCIAS: ${document.getElementById('t-gan').innerText}\n`;
+        txt += `GASTOS TOTALES: ${document.getElementById('t-gas').innerText}\n`;
+        txt += `(De los cuales Porquería: ${document.getElementById('t-por').innerText})\n`;
+        txt += `BALANCE FINAL: ${document.getElementById('t-bal').innerText}\n\nDETALLE:\n`;
+        
+        datos.t.forEach(x => {
+            if(x.mes === mesSel) txt += `${x.tipo==='gan'?'[+]':'[-]'} ${x.desc} (${x.cat}): $${x.monto}\n`;
+        });
+        
+        const blob = new Blob([txt], {type: 'text/plain'});
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(blob); 
+        a.download = `gastos_${mesSel}.txt`; 
+        a.click();
     }
 
     render();
