@@ -22,7 +22,7 @@
         .full { grid-column: span 2; }
 
         .section { background: var(--white); padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        h2 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        h2 { margin: 0 0 15px 0; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
 
         .form-stack { display: flex; flex-direction: column; gap: 10px; }
         input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
@@ -31,7 +31,11 @@
         .btn-inc { background: var(--success); }
         .btn-exp { background: var(--danger); }
         .btn-add { background: var(--primary); width: 100%; margin-top: 5px; }
-        .btn-outline { background: transparent; border: 1px solid #cbd5e1; color: #64748b; font-size: 12px; padding: 8px; margin-top: 10px; width: 100%; }
+        
+        /* Botones de acción mensual */
+        .admin-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn-action { background: white; border: 1px solid #e2e8f0; color: #64748b; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: 600; }
+        .btn-reset { color: var(--danger); border-color: #fee2e2; }
 
         .debt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .debt-box { border: 2px solid #e2e8f0; padding: 12px; border-radius: 10px; text-align: center; cursor: pointer; }
@@ -48,7 +52,8 @@
 <div class="container">
     <div class="section">
         <div class="form-stack">
-            <select id="current-month" title="Seleccionar Mes" onchange="update()">
+            <label for="current-month" style="font-size: 12px; font-weight: bold; color: #64748b;">MES DE REGISTRO:</label>
+            <select id="current-month" onchange="updateMonth()">
                 <option value="Enero">Enero</option><option value="Febrero">Febrero</option>
                 <option value="Marzo">Marzo</option><option value="Abril">Abril</option>
                 <option value="Mayo">Mayo</option><option value="Junio">Junio</option>
@@ -62,17 +67,18 @@
     <div class="summary-grid">
         <div class="card"><div class="card-label">Ganado</div><div id="res-inc" class="card-amount income-txt">$0</div></div>
         <div class="card"><div class="card-label">Gastado</div><div id="res-exp" class="card-amount expense-txt">$0</div></div>
-        <div class="card full"><div class="card-label">Balance en Mano</div><div id="res-bal" class="card-amount balance-txt">$0</div></div>
+        <div class="card full"><div class="card-label">Balance Actual</div><div id="res-bal" class="card-amount balance-txt">$0</div></div>
     </div>
 
     <div class="section">
         <h2>📝 Nueva Anotación</h2>
         <div class="form-stack">
-            <input type="text" id="desc" placeholder="¿En qué gastaste?" autocomplete="off">
+            <input type="text" id="desc" placeholder="¿En qué?" autocomplete="off">
             <input type="number" id="amt" placeholder="Monto $" inputmode="decimal">
             <select id="cat" title="Categoría">
                 <option value="Comida">Comida</option><option value="Salario">Salario</option>
                 <option value="Porquería">Porquería</option><option value="Servicios">Servicios</option>
+                <option value="Otros">Otros</option>
             </select>
             <div class="btn-row">
                 <button onclick="save('income')" class="btn btn-inc">+ Ganancia</button>
@@ -99,13 +105,15 @@
     <div class="section">
         <h2>Historial</h2>
         <div id="history"></div>
-        <button onclick="downloadData()" class="btn-outline">📥 Descargar Resumen (Backup)</button>
-        <button onclick="resetMonth()" class="btn-outline" style="color:var(--danger); border-color:var(--danger)">♻️ Reiniciar Mes (Borra Historial)</button>
+        <div class="admin-btns">
+            <button onclick="downloadData()" class="btn-action">📥 Descargar Mes</button>
+            <button onclick="resetMonth()" class="btn-action btn-reset">♻️ Reiniciar Mes</button>
+        </div>
     </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('app_v4')) || { trans: [], debtors: [], paidIds: [], month: 'Enero' };
+    let db = JSON.parse(localStorage.getItem('app_v5')) || { trans: [], debtors: [], paidIds: [], month: 'Enero' };
     document.getElementById('current-month').value = db.month;
 
     const PLAN = [
@@ -118,7 +126,7 @@
     function save(type) {
         const d = document.getElementById('desc').value, a = parseFloat(document.getElementById('amt').value);
         if(!d || !a) return;
-        db.trans.push({ id: Date.now(), type, d, a, c: document.getElementById('cat').value, m: db.month });
+        db.trans.push({ id: Date.now(), type, d, a, c: document.getElementById('cat').value });
         update();
         document.getElementById('desc').value = ''; document.getElementById('amt').value = '';
     }
@@ -126,76 +134,4 @@
     function saveD() {
         const n = document.getElementById('d-name').value, a = parseFloat(document.getElementById('d-amt').value);
         if(!n || !a) return;
-        db.debtors.push({ id: Date.now(), n, a });
-        update();
-        document.getElementById('d-name').value = ''; document.getElementById('d-amt').value = '';
-    }
-
-    function resetMonth() {
-        if(confirm("¿Estás segura? Se borrará todo el historial de gastos para empezar de cero.")) {
-            db.trans = [];
-            update();
-        }
-    }
-
-    function downloadData() {
-        let text = `RESUMEN DE GASTOS - MES: ${db.month}\n\n`;
-        text += `GANADO: ${document.getElementById('res-inc').innerText}\n`;
-        text += `GASTADO: ${document.getElementById('res-exp').innerText}\n`;
-        text += `BALANCE: ${document.getElementById('res-bal').innerText}\n\n`;
-        text += `--- DETALLE ---\n`;
-        db.trans.forEach(t => text += `[${t.type}] ${t.d} (${t.c}): $${t.a}\n`);
-        
-        const blob = new Blob([text], { type: 'text/plain' });
-        const anchor = document.createElement('a');
-        anchor.download = `finanzas_${db.month}.txt`;
-        anchor.href = window.URL.createObjectURL(blob);
-        anchor.click();
-    }
-
-    function toggleP(id) {
-        db.paidIds.includes(id) ? db.paidIds = db.paidIds.filter(x => x !== id) : db.paidIds.push(id);
-        update();
-    }
-
-    function remove(list, id) {
-        db[list] = db[list].filter(x => x.id !== id);
-        update();
-    }
-
-    function update() {
-        db.month = document.getElementById('current-month').value;
-        localStorage.setItem('app_v4', JSON.stringify(db));
-        render();
-    }
-
-    function render() {
-        let i = 0, e = 0;
-        const h = document.getElementById('history'); h.innerHTML = '';
-        db.trans.slice().reverse().forEach(t => {
-            t.type === 'income' ? i += t.a : e += t.a;
-            h.innerHTML += `<div class="item ${t.type === 'income' ? 'item-inc' : 'item-exp'}">
-                <span><strong>${t.d}</strong><br><small>${t.c}</small></span>
-                <span>$${t.a.toLocaleString()} <button class="del-btn" onclick="remove('trans', ${t.id})">x</button></span>
-            </div>`;
-        });
-
-        const dl = document.getElementById('d-list'); dl.innerHTML = '';
-        db.debtors.forEach(d => {
-            dl.innerHTML += `<div class="item" style="border-left-color:var(--primary)"><span>${d.n}</span><span>$${d.a.toLocaleString()} <button class="del-btn" onclick="remove('debtors', ${d.id})">x</button></span></div>`;
-        });
-
-        const bl = document.getElementById('black-debt-list'); bl.innerHTML = '';
-        PLAN.forEach(p => {
-            const isP = db.paidIds.includes(p.id);
-            bl.innerHTML += `<div class="debt-box ${isP ? 'paid' : ''}" onclick="toggleP('${p.id}')"><strong>${p.m}</strong><br>$${p.a.toLocaleString()}</div>`;
-        });
-
-        document.getElementById('res-inc').innerText = `$${i.toLocaleString()}`;
-        document.getElementById('res-exp').innerText = `$${e.toLocaleString()}`;
-        document.getElementById('res-bal').innerText = `$${(i - e).toLocaleString()}`;
-    }
-    render();
-</script>
-</body>
-</html>
+        db.debtors.push({ id:
