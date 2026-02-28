@@ -24,34 +24,4 @@
         .btn-cons { background: var(--consultorio); }
         .btn-exp { background: var(--gasto); }
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #f8fafc; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid #cbd5e1; }
-        .btn-del { background: #fee2e2; color: #ef4444; border: none; padding: 6px 12px; border-radius: 10px; width: auto; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); padding-top: 50px; }
-        .modal-content { background: white; margin: auto; padding: 20px; border-radius: 25px; width: 85%; max-width: 400px; }
-        .debt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .box { border: 2px solid #f1f5f9; padding: 12px; border-radius: 14px; text-align: center; }
-        .paid { background: #dcfce7; border-color: var(--ganancia); text-decoration: line-through; }
-    </style>
-</head>
-<body>
-
-<div class="header-app"><h1>Control de Gastos</h1></div>
-
-<div class="container">
-    <div class="resumen-grid">
-        <div class="card-sm"><div class="label">Ganancias Totales</div><div id="t-gan" class="val" style="color:var(--ganancia)">$0</div></div>
-        <div class="card-sm"><div class="label">Gastos Totales</div><div id="t-gas" class="val" style="color:var(--gasto)">$0</div></div>
-        <div class="card-sm"><div class="label">Pérdida de Ahorro</div><div id="t-por" class="val" style="color:var(--porqueria)">$0</div></div>
-        <div class="card-sm"><div class="label">Consultorio</div><div id="t-cons-val" class="val" style="color:var(--consultorio)">$0</div></div>
-        <div class="card-sm" style="grid-column: span 2; text-align: center;">
-            <div class="label">Balance Actual</div><div id="t-bal" class="val" style="color:var(--balance)">$0</div>
-        </div>
-    </div>
-
-    <div class="section">
-        <select id="sel-mes" onchange="cambiarMes()"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select>
-        <h3>📝 Nueva Anotación</h3>
-        <input type="text" id="t-desc" placeholder="Descripción">
-        <input type="number" id="t-monto" placeholder="Monto $" inputmode="decimal">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-            <button onclick="addTrans('gan', 'General')" class="btn-main btn-inc">+ Ganancia</button>
-            <button onclick="addTrans('gan', 'Consultorio')" class="btn-
+        .btn-del {
