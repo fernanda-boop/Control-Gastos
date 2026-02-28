@@ -3,83 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <title>Control de Gastos</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Gastos">
-    
     <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" href="icon.png">
-
     <style>
-        :root { --ganancia: #10b981; --gasto: #ef4444; --porqueria: #a855f7; --deuda: #f59e0b; --balance: #3b82f6; --dorado: #FFD700; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; margin: 0; padding: 0; color: #1e293b; }
-        
-        /* Encabezado Estilo App */
+        :root { --ganancia: #10b981; --gasto: #ef4444; --porqueria: #a855f7; --deuda: #f59e0b; --balance: #3b82f6; --dorado: #FFD700; --consultorio: #0ea5e9; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; margin: 0; padding: 0; color: #1e293b; }
         .header-app { background: var(--dorado); padding: 40px 20px 25px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .header-app h1 { margin: 0; font-size: 24px; color: #000; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-
+        .header-app h1 { margin: 0; font-size: 24px; color: #000; font-weight: 900; text-transform: uppercase; }
         .container { max-width: 500px; margin: 0 auto; padding: 15px; padding-bottom: 60px; }
-
-        /* Tarjetas de Resumen */
         .resumen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: -20px; margin-bottom: 20px; }
-        .card-sm { background: white; padding: 15px; border-radius: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03); }
-        .label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .card-sm { background: white; padding: 15px; border-radius: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; }
         .val { font-size: 18px; font-weight: 800; }
-
-        /* Secciones */
-        .section { background: white; padding: 20px; border-radius: 22px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h3 { margin-top: 0; font-size: 18px; display: flex; align-items: center; gap: 8px; }
-        
+        .section { background: white; padding: 20px; border-radius: 22px; box-shadow: 0 10px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
         input, select, button { width: 100%; padding: 14px; margin: 8px 0; border-radius: 14px; border: 1px solid #e2e8f0; font-size: 16px; box-sizing: border-box; }
-        .btn-main { border: none; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; }
+        .btn-main { border: none; font-weight: bold; color: white; cursor: pointer; }
         .btn-inc { background: var(--ganancia); }
+        .btn-cons { background: var(--consultorio); }
         .btn-exp { background: var(--gasto); }
-        .btn-del { background: #fee2e2; color: #ef4444; font-size: 12px; width: auto; padding: 6px 12px; border: none; border-radius: 10px; }
-
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #f8fafc; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid #cbd5e1; }
-        .total-box { background: #dbeafe; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; font-weight: bold; color: #1e40af; }
-
-        .debt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .box { border: 2px solid #f1f5f9; padding: 12px; border-radius: 14px; text-align: center; cursor: pointer; background: white; }
-        .paid { background: #dcfce7; border-color: var(--ganancia); color: #065f46; text-decoration: line-through; }
+        .btn-del { background: #fee2e2; color: #ef4444; border: none; padding: 6px 12px; border-radius: 10px; width: auto; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); padding-top: 50px; }
+        .modal-content { background: white; margin: auto; padding: 20px; border-radius: 25px; width: 85%; max-width: 400px; }
+        .debt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .box { border: 2px solid #f1f5f9; padding: 12px; border-radius: 14px; text-align: center; }
+        .paid { background: #dcfce7; border-color: var(--ganancia); text-decoration: line-through; }
     </style>
 </head>
 <body>
 
-<div class="header-app">
-    <h1>Control de Gastos</h1>
-</div>
+<div class="header-app"><h1>Control de Gastos</h1></div>
 
 <div class="container">
     <div class="resumen-grid">
-        <div class="card-sm"><div class="label">Ganancias</div><div id="t-gan" class="val" style="color:var(--ganancia)">$0</div></div>
-        <div class="card-sm"><div class="label">Gastos</div><div id="t-gas" class="val" style="color:var(--gasto)">$0</div></div>
-        <div class="card-sm"><div class="label">Porquería</div><div id="t-por" class="val" style="color:var(--porqueria)">$0</div></div>
-        <div class="card-sm"><div class="label">Deudas Mes Pasado</div><div id="t-deu" class="val" style="color:var(--deuda)">$0</div></div>
-        <div class="card-sm" style="grid-column: span 2; text-align: center;">
-            <div class="label">Balance Actual</div><div id="t-bal" class="val" style="color:var(--balance)">$0</div>
+        <div class="card-sm"><div class="label">Ganancias Totales</div><div id="t-gan" class="val" style="color:var(--ganancia)">$0</div></div>
+        <div class="card-sm"><div class="label">Gastos Totales</div><div id="t-gas" class="val" style="color:var(--gasto)">$0</div></div>
+        <div class="card-sm"><div class="label">Balance Actual</div><div id="t-bal" class="val" style="color:var(--balance)">$0</div></div>
+        <div class="card-sm"><div class="label">Consultorio</div><div id="t-cons-val" class="val" style="color:var(--consultorio)">$0</div></div>
+    </div>
+
+    <div class="section">
+        <select id="sel-mes" onchange="cambiarMes()"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select>
+        <h3>📝 Nueva Anotación</h3>
+        <input type="text" id="t-desc" placeholder="Descripción">
+        <input type="number" id="t-monto" placeholder="Monto $" inputmode="decimal">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+            <button onclick="addTrans('gan', 'General')" class="btn-main btn-inc">+ Ganancia</button>
+            <button onclick="addTrans('gan', 'Consultorio')" class="btn-main btn-cons">+ Consultorio</button>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+            <button onclick="addTrans('gas', 'Gasto')" class="btn-main btn-exp">- Gasto</button>
+            <button onclick="addTrans('gas', 'Porquería')" class="btn-main" style="background:var(--porqueria)">- Porquería</button>
         </div>
     </div>
 
     <div class="section">
-        <label class="label">Mes de Registro</label>
-        <select id="sel-mes" onchange="render()"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option></select>
-        
-        <h3>📝 Nueva Anotación</h3>
-        <input type="text" id="t-desc" placeholder="Descripción">
-        <input type="number" id="t-monto" placeholder="Monto $" inputmode="decimal">
-        <select id="t-cat">
-            <option value="General">General</option>
-            <option value="Porquería">Porquería</option>
-            <option value="Deuda">Deuda Mes Pasado</option>
-        </select>
-        <div style="display:flex; gap:10px">
-            <button onclick="addTrans('gan')" class="btn-main btn-inc">+ Ganancia</button>
-            <button onclick="addTrans('gas')" class="btn-main btn-exp">- Gasto</button>
-        </div>
+        <h3>💡 Servicios a Pagar</h3>
+        <input type="text" id="dev-nom" placeholder="Ej: Luz, Internet...">
+        <input type="number" id="dev-mon" placeholder="Monto $" inputmode="decimal">
+        <button onclick="addDeudaAPagar()" class="btn-main" style="background:var(--deuda)">+ Agregar Pendiente</button>
+        <div id="lista-pendientes" style="margin-top:10px"></div>
     </div>
+
+    <button onclick="document.getElementById('mPlan').style.display='block'" class="btn-main" style="background:#1e293b; margin-bottom:20px">💳 Ver Plan Deuda Negro</button>
 
     <div class="section">
         <h3>👥 Me deben dinero</h3>
@@ -87,39 +75,58 @@
         <input type="number" id="d-mon" placeholder="Monto $" inputmode="decimal">
         <button onclick="addDeudor()" class="btn-main" style="background:var(--balance)">+ Agregar Deudor</button>
         <div id="lista-deudores" style="margin: 15px 0;"></div>
-        <div class="total-box"><span>💰 Total a Cobrar</span><span id="t-cobrar">$0</span></div>
     </div>
 
     <div class="section">
+        <h3>📊 Historial del Mes</h3>
+        <div id="historial"></div>
+    </div>
+</div>
+
+<div id="mPlan" class="modal">
+    <div class="modal-content">
         <h3>💳 Plan Deuda Negro</h3>
         <div id="plan-negro" class="debt-grid"></div>
-    </div>
-
-    <div class="section">
-        <h3>📊 Historial</h3>
-        <div id="historial"></div>
-        <button onclick="descargarMes()" class="btn-main" style="background:#64748b; margin-top:15px">📥 Descargar Resumen</button>
+        <button onclick="document.getElementById('mPlan').style.display='none'" style="background:#f1f5f9; color:#1e293b; border:none; margin-top:20px; padding:10px; border-radius:10px">Cerrar</button>
     </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('canva_final_db')) || { trans: [], deudores: [], plan: [], mes: 'Enero' };
+    let db = JSON.parse(localStorage.getItem('finanzas_v5')) || { trans: [], deudores: [], pendientes: [], plan: [], mesGuardado: 'Enero' };
+    const CUOTAS = [{id:'1', m:'Dic 24', a:'100k'}, {id:'2', m:'Ene 25', a:'160k'}, {id:'3', m:'Feb 25', a:'200k'}, {id:'4', m:'Mar 25', a:'200k'}];
 
-    const CUOTAS = [
-        {id:'1', m:'Dic 24', a:'100k'}, {id:'2', m:'Ene 25', a:'160k'},
-        {id:'3', m:'Feb 25', a:'200k'}, {id:'4', m:'Mar 25', a:'200k'},
-        {id:'5', m:'Abr 25', a:'200k'}, {id:'6', m:'May 25', a:'240k'}
-    ];
+    function save() { localStorage.setItem('finanzas_v5', JSON.stringify(db)); render(); }
 
-    function addTrans(tipo) {
+    function cambiarMes() {
+        db.mesGuardado = document.getElementById('sel-mes').value;
+        save();
+    }
+
+    function addTrans(tipo, cat) {
         const desc = document.getElementById('t-desc').value;
         const monto = parseFloat(document.getElementById('t-monto').value);
-        const cat = document.getElementById('t-cat').value;
-        const mes = document.getElementById('sel-mes').value;
         if(!desc || !monto) return;
-        db.trans.push({ id: Date.now(), desc, monto, tipo, cat, mes, fecha: new Date().toLocaleDateString() });
-        save();
+        db.trans.push({ id: Date.now(), desc, monto, tipo, cat, mes: db.mesGuardado, fecha: new Date().toLocaleDateString() });
         document.getElementById('t-desc').value = ''; document.getElementById('t-monto').value = '';
+        save();
+    }
+
+    function addDeudaAPagar() {
+        const desc = document.getElementById('dev-nom').value;
+        const monto = parseFloat(document.getElementById('dev-mon').value);
+        if(!desc || !monto) return;
+        db.pendientes.push({ id: Date.now(), desc, monto, pagado: false });
+        document.getElementById('dev-nom').value = ''; document.getElementById('dev-mon').value = '';
+        save();
+    }
+
+    function pagarDeuda(id) {
+        const index = db.pendientes.findIndex(p => p.id === id);
+        if(index > -1 && !db.pendientes[index].pagado) {
+            db.pendientes[index].pagado = true;
+            db.trans.push({ id: Date.now(), desc: "PAGO: " + db.pendientes[index].desc, monto: db.pendientes[index].monto, tipo: 'gas', cat: 'Servicios', mes: db.mesGuardado, fecha: new Date().toLocaleDateString() });
+            save();
+        }
     }
 
     function addDeudor() {
@@ -127,50 +134,48 @@
         const monto = parseFloat(document.getElementById('d-mon').value);
         if(!nombre || !monto) return;
         db.deudores.push({ id: Date.now(), nombre, monto });
-        save();
         document.getElementById('d-nom').value = ''; document.getElementById('d-mon').value = '';
+        save();
     }
 
-    function delTrans(id) { db.trans = db.trans.filter(t => t.id !== id); save(); }
-    function delDeudor(id) { db.deudores = db.deudores.filter(d => d.id !== id); save(); }
     function togPlan(id) { db.plan.includes(id) ? db.plan = db.plan.filter(p => p !== id) : db.plan.push(id); save(); }
-
-    function save() {
-        localStorage.setItem('canva_final_db', JSON.stringify(db));
-        render();
-    }
+    function delItem(lista, id) { db[lista] = db[lista].filter(i => i.id !== id); save(); }
 
     function render() {
-        const mes = document.getElementById('sel-mes').value;
-        let g = 0, s = 0, p = 0, d = 0;
+        document.getElementById('sel-mes').value = db.mesGuardado;
+        const mes = db.mesGuardado;
+        let g = 0, s = 0, c = 0;
+        
         const hDiv = document.getElementById('historial'); hDiv.innerHTML = '';
         db.trans.filter(t => t.mes === mes).forEach(t => {
-            if(t.tipo === 'gan') g += t.monto; 
-            else { s += t.monto; if(t.cat === 'Porquería') p += t.monto; if(t.cat === 'Deuda') d += t.monto; }
+            if(t.tipo === 'gan') { g += t.monto; if(t.cat === 'Consultorio') c += t.monto; } else { s += t.monto; }
             const color = t.tipo === 'gan' ? 'var(--ganancia)' : 'var(--gasto)';
-            hDiv.innerHTML += `<div class="item-row" style="border-left-color:${color}"><div class="item-info"><strong>${t.desc}</strong><small>${t.cat}</small></div><div style="display:flex; align-items:center; gap:10px"><span style="font-weight:800; color:${color}">$${t.monto.toLocaleString()}</span><button class="btn-del" onclick="delTrans(${t.id})">x</button></div></div>`;
+            hDiv.innerHTML += `<div class="item-row" style="border-left-color:${color}"><div><strong>${t.desc}</strong></div><div><span style="color:${color};font-weight:bold">$${t.monto.toLocaleString()}</span> <button class="btn-del" onclick="delItem('trans',${t.id})">x</button></div></div>`;
         });
+
+        const pDiv = document.getElementById('lista-pendientes'); pDiv.innerHTML = '';
+        db.pendientes.forEach(p => {
+            pDiv.innerHTML += `<div class="item-row" style="border-left-color:var(--deuda)">
+                <div style="${p.pagado?'text-decoration:line-through;color:#94a3b8':''}"><strong>${p.desc}</strong><br>$${p.monto.toLocaleString()}</div>
+                <div>${p.pagado ? '✅' : `<button onclick="pagarDeuda(${p.id})" style="background:#dcfce7;border:none;padding:5px 10px;border-radius:8px">PAGAR</button>`} <button class="btn-del" onclick="delItem('pendientes',${p.id})">x</button></div>
+            </div>`;
+        });
+
         const dDiv = document.getElementById('lista-deudores'); dDiv.innerHTML = '';
-        let cob = 0;
-        db.deudores.forEach(deu => {
-            cob += deu.monto;
-            dDiv.innerHTML += `<div class="item-row" style="border-left-color:var(--balance)"><span>${deu.nombre}</span><div style="display:flex; align-items:center; gap:10px"><span style="font-weight:bold; color:var(--balance)">$${deu.monto.toLocaleString()}</span><button class="btn-del" onclick="delDeudor(${deu.id})">x</button></div></div>`;
+        db.deudores.forEach(d => {
+            dDiv.innerHTML += `<div class="item-row" style="border-left-color:var(--balance)"><span>${d.nombre}</span><div><strong>$${d.monto.toLocaleString()}</strong> <button class="btn-del" onclick="delItem('deudores',${d.id})">x</button></div></div>`;
         });
+
+        const plDiv = document.getElementById('plan-negro'); plDiv.innerHTML = '';
+        CUOTAS.forEach(cu => {
+            const isP = db.plan.includes(cu.id);
+            plDiv.innerHTML += `<div class="box ${isP?'paid':''}" onclick="togPlan('${cu.id}')"><strong>${cu.m}</strong><br>$${cu.a}</div>`;
+        });
+
         document.getElementById('t-gan').innerText = `$${g.toLocaleString()}`;
         document.getElementById('t-gas').innerText = `$${s.toLocaleString()}`;
-        document.getElementById('t-por').innerText = `$${p.toLocaleString()}`;
-        document.getElementById('t-deu').innerText = `$${d.toLocaleString()}`;
         document.getElementById('t-bal').innerText = `$${(g - s).toLocaleString()}`;
-        document.getElementById('t-cobrar').innerText = `$${cob.toLocaleString()}`;
-        const pDiv = document.getElementById('plan-negro'); pDiv.innerHTML = '';
-        CUOTAS.forEach(c => { const isP = db.plan.includes(c.id); pDiv.innerHTML += `<div class="box ${isP?'paid':''}" onclick="togPlan('${c.id}')"><strong>${c.m}</strong><br>$${c.a}</div>`; });
-    }
-
-    function descargarMes() {
-        const mesSel = document.getElementById('sel-mes').value;
-        let txt = `RESUMEN: ${mesSel}\nGANANCIAS: ${document.getElementById('t-gan').innerText}\nGASTOS: ${document.getElementById('t-gas').innerText}\nBALANCE: ${document.getElementById('t-bal').innerText}\nCOBRAR: ${document.getElementById('t-cobrar').innerText}`;
-        const blob = new Blob([txt], {type: 'text/plain'});
-        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `Resumen_${mesSel}.txt`; link.click();
+        document.getElementById('t-cons-val').innerText = `$${c.toLocaleString()}`;
     }
     render();
 </script>
