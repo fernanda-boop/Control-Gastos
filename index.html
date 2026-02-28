@@ -40,8 +40,11 @@
     <div class="resumen-grid">
         <div class="card-sm"><div class="label">Ganancias Totales</div><div id="t-gan" class="val" style="color:var(--ganancia)">$0</div></div>
         <div class="card-sm"><div class="label">Gastos Totales</div><div id="t-gas" class="val" style="color:var(--gasto)">$0</div></div>
-        <div class="card-sm"><div class="label">Balance Actual</div><div id="t-bal" class="val" style="color:var(--balance)">$0</div></div>
+        <div class="card-sm"><div class="label">Pérdida de Ahorro</div><div id="t-por" class="val" style="color:var(--porqueria)">$0</div></div>
         <div class="card-sm"><div class="label">Consultorio</div><div id="t-cons-val" class="val" style="color:var(--consultorio)">$0</div></div>
+        <div class="card-sm" style="grid-column: span 2; text-align: center;">
+            <div class="label">Balance Actual</div><div id="t-bal" class="val" style="color:var(--balance)">$0</div>
+        </div>
     </div>
 
     <div class="section">
@@ -51,133 +54,4 @@
         <input type="number" id="t-monto" placeholder="Monto $" inputmode="decimal">
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
             <button onclick="addTrans('gan', 'General')" class="btn-main btn-inc">+ Ganancia</button>
-            <button onclick="addTrans('gan', 'Consultorio')" class="btn-main btn-cons">+ Consultorio</button>
-        </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-            <button onclick="addTrans('gas', 'Gasto')" class="btn-main btn-exp">- Gasto</button>
-            <button onclick="addTrans('gas', 'Porquería')" class="btn-main" style="background:var(--porqueria)">- Porquería</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <h3>💡 Servicios a Pagar</h3>
-        <input type="text" id="dev-nom" placeholder="Ej: Luz, Internet...">
-        <input type="number" id="dev-mon" placeholder="Monto $" inputmode="decimal">
-        <button onclick="addDeudaAPagar()" class="btn-main" style="background:var(--deuda)">+ Agregar Pendiente</button>
-        <div id="lista-pendientes" style="margin-top:10px"></div>
-    </div>
-
-    <button onclick="document.getElementById('mPlan').style.display='block'" class="btn-main" style="background:#1e293b; margin-bottom:20px">💳 Ver Plan Deuda Negro</button>
-
-    <div class="section">
-        <h3>👥 Me deben dinero</h3>
-        <input type="text" id="d-nom" placeholder="Nombre">
-        <input type="number" id="d-mon" placeholder="Monto $" inputmode="decimal">
-        <button onclick="addDeudor()" class="btn-main" style="background:var(--balance)">+ Agregar Deudor</button>
-        <div id="lista-deudores" style="margin: 15px 0;"></div>
-    </div>
-
-    <div class="section">
-        <h3>📊 Historial del Mes</h3>
-        <div id="historial"></div>
-    </div>
-</div>
-
-<div id="mPlan" class="modal">
-    <div class="modal-content">
-        <h3>💳 Plan Deuda Negro</h3>
-        <div id="plan-negro" class="debt-grid"></div>
-        <button onclick="document.getElementById('mPlan').style.display='none'" style="background:#f1f5f9; color:#1e293b; border:none; margin-top:20px; padding:10px; border-radius:10px">Cerrar</button>
-    </div>
-</div>
-
-<script>
-    let db = JSON.parse(localStorage.getItem('finanzas_v5')) || { trans: [], deudores: [], pendientes: [], plan: [], mesGuardado: 'Enero' };
-    const CUOTAS = [{id:'1', m:'Dic 24', a:'100k'}, {id:'2', m:'Ene 25', a:'160k'}, {id:'3', m:'Feb 25', a:'200k'}, {id:'4', m:'Mar 25', a:'200k'}];
-
-    function save() { localStorage.setItem('finanzas_v5', JSON.stringify(db)); render(); }
-
-    function cambiarMes() {
-        db.mesGuardado = document.getElementById('sel-mes').value;
-        save();
-    }
-
-    function addTrans(tipo, cat) {
-        const desc = document.getElementById('t-desc').value;
-        const monto = parseFloat(document.getElementById('t-monto').value);
-        if(!desc || !monto) return;
-        db.trans.push({ id: Date.now(), desc, monto, tipo, cat, mes: db.mesGuardado, fecha: new Date().toLocaleDateString() });
-        document.getElementById('t-desc').value = ''; document.getElementById('t-monto').value = '';
-        save();
-    }
-
-    function addDeudaAPagar() {
-        const desc = document.getElementById('dev-nom').value;
-        const monto = parseFloat(document.getElementById('dev-mon').value);
-        if(!desc || !monto) return;
-        db.pendientes.push({ id: Date.now(), desc, monto, pagado: false });
-        document.getElementById('dev-nom').value = ''; document.getElementById('dev-mon').value = '';
-        save();
-    }
-
-    function pagarDeuda(id) {
-        const index = db.pendientes.findIndex(p => p.id === id);
-        if(index > -1 && !db.pendientes[index].pagado) {
-            db.pendientes[index].pagado = true;
-            db.trans.push({ id: Date.now(), desc: "PAGO: " + db.pendientes[index].desc, monto: db.pendientes[index].monto, tipo: 'gas', cat: 'Servicios', mes: db.mesGuardado, fecha: new Date().toLocaleDateString() });
-            save();
-        }
-    }
-
-    function addDeudor() {
-        const nombre = document.getElementById('d-nom').value;
-        const monto = parseFloat(document.getElementById('d-mon').value);
-        if(!nombre || !monto) return;
-        db.deudores.push({ id: Date.now(), nombre, monto });
-        document.getElementById('d-nom').value = ''; document.getElementById('d-mon').value = '';
-        save();
-    }
-
-    function togPlan(id) { db.plan.includes(id) ? db.plan = db.plan.filter(p => p !== id) : db.plan.push(id); save(); }
-    function delItem(lista, id) { db[lista] = db[lista].filter(i => i.id !== id); save(); }
-
-    function render() {
-        document.getElementById('sel-mes').value = db.mesGuardado;
-        const mes = db.mesGuardado;
-        let g = 0, s = 0, c = 0;
-        
-        const hDiv = document.getElementById('historial'); hDiv.innerHTML = '';
-        db.trans.filter(t => t.mes === mes).forEach(t => {
-            if(t.tipo === 'gan') { g += t.monto; if(t.cat === 'Consultorio') c += t.monto; } else { s += t.monto; }
-            const color = t.tipo === 'gan' ? 'var(--ganancia)' : 'var(--gasto)';
-            hDiv.innerHTML += `<div class="item-row" style="border-left-color:${color}"><div><strong>${t.desc}</strong></div><div><span style="color:${color};font-weight:bold">$${t.monto.toLocaleString()}</span> <button class="btn-del" onclick="delItem('trans',${t.id})">x</button></div></div>`;
-        });
-
-        const pDiv = document.getElementById('lista-pendientes'); pDiv.innerHTML = '';
-        db.pendientes.forEach(p => {
-            pDiv.innerHTML += `<div class="item-row" style="border-left-color:var(--deuda)">
-                <div style="${p.pagado?'text-decoration:line-through;color:#94a3b8':''}"><strong>${p.desc}</strong><br>$${p.monto.toLocaleString()}</div>
-                <div>${p.pagado ? '✅' : `<button onclick="pagarDeuda(${p.id})" style="background:#dcfce7;border:none;padding:5px 10px;border-radius:8px">PAGAR</button>`} <button class="btn-del" onclick="delItem('pendientes',${p.id})">x</button></div>
-            </div>`;
-        });
-
-        const dDiv = document.getElementById('lista-deudores'); dDiv.innerHTML = '';
-        db.deudores.forEach(d => {
-            dDiv.innerHTML += `<div class="item-row" style="border-left-color:var(--balance)"><span>${d.nombre}</span><div><strong>$${d.monto.toLocaleString()}</strong> <button class="btn-del" onclick="delItem('deudores',${d.id})">x</button></div></div>`;
-        });
-
-        const plDiv = document.getElementById('plan-negro'); plDiv.innerHTML = '';
-        CUOTAS.forEach(cu => {
-            const isP = db.plan.includes(cu.id);
-            plDiv.innerHTML += `<div class="box ${isP?'paid':''}" onclick="togPlan('${cu.id}')"><strong>${cu.m}</strong><br>$${cu.a}</div>`;
-        });
-
-        document.getElementById('t-gan').innerText = `$${g.toLocaleString()}`;
-        document.getElementById('t-gas').innerText = `$${s.toLocaleString()}`;
-        document.getElementById('t-bal').innerText = `$${(g - s).toLocaleString()}`;
-        document.getElementById('t-cons-val').innerText = `$${c.toLocaleString()}`;
-    }
-    render();
-</script>
-</body>
-</html>
+            <button onclick="addTrans('gan', 'Consultorio')" class="btn-
